@@ -10,6 +10,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from tensorflow.keras.models import load_model
 from sklearn.preprocessing import LabelEncoder
+import gdown
 
 # Page Configuration
 st.set_page_config(page_title='Fashion Product Recommender', page_icon="👗", layout="wide")
@@ -45,9 +46,8 @@ def load_models():
         # Configure Gemini AI
         genai.configure(api_key="AIzaSyCF5NyCk8LvDATLUtEsTmcS_NgHBi4Az3Q")
         gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-        
-        # Load image classification model
-        tf_model = load_model('final_articleType_model.h5')
+      
+      
         
         # Load precomputed embeddings
         embeddings = np.load("image_embeddings.npy")
@@ -55,13 +55,30 @@ def load_models():
         
         return {
             'gemini': gemini_model,
-            'tf_model': tf_model,
             'embeddings': embeddings,
             'image_paths': image_paths
         }
+    
     except Exception as e:
         st.error(f"Error loading models: {e}")
         return None
+
+
+# Function to download the model file
+def download_model():
+    zip_file = "final_articleType_model.h5"
+    if not os.path.exists(zip_file):
+        try:
+            
+            file_id = "1KblZ3xPpUhLic12rsQfWJ5tDZ0ViPij8"  
+            download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+            gdown.download(download_url, zip_file, quiet=False)
+            st.success(f"Downloaded {zip_file} successfully!")
+        except Exception as e:
+            st.error(f"Failed to download the model: {e}")
+            raise e
+            
+            
 
 # Recommendation Functions from First Code
 def get_recommendations(user_input, data, vectorizer, tfidf_matrix):
@@ -225,7 +242,7 @@ def main():
                 for idx, row in results.iterrows():
                     with cols[idx % 2]:
                         st.write(f"Product ID: {row['id']}")
-                        st.image(row['link'], use_column_width=True)
+                        st.image(row['link'], width=400)
                         st.write(f"{row['productDisplayName']}")
                         st.write(f"Price: ₹{row['Price']}")
                         st.write(f"Sizes: {row['SizeOption']}")
@@ -293,102 +310,103 @@ def main():
                     
     
     # Image-Based Recommendation Mode
+    
     elif app_mode == "Image-Based Recommendation":
         st.title("Image Classification & Recommendation")
-        
+    
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-        
-        if uploaded_file is not None:
-            
-    # Create a container to center and resize the uploaded image
-            col1, col2, col3 = st.columns([1,3,1])
     
-            with col2:
-        # Display the uploaded image with a fixed width
-                st.image(uploaded_file, caption="Uploaded Image", width=400)
-            
-            try:
-                image = Image.open(uploaded_file)
-                processed_image = preprocess_image(image)
-                
-                # Predict image class
-                predictions = models['tf_model'].predict(processed_image)
-                le = LabelEncoder()
-                le.fit(data['articleType'])
-
-# Make predictions
-                predictions = models['tf_model'].predict(processed_image)
-                predicted_class = np.argmax(predictions)
-
-# Get the corresponding class label
-                predicted_label = le.inverse_transform([predicted_class])[0]
-
-                st.write(f"**Predicted Class:** {predicted_label}")
-        # Extract embeddings for the input image
-                st.write("Extracting features...")
-                feature_extractor = tf.keras.Model(inputs=models['tf_model'].input, outputs=models['tf_model'].layers[-3].output)
-                input_embedding = feature_extractor.predict(processed_image).flatten()
-
-        # Recommend similar images
-                st.write("Fetching recommendations...")
-                recommendations = recommend_similar_images(input_embedding, models['embeddings'], models['image_paths'])
-
-        # Display recommended images in 2 images per row
-                st.write("**Recommended Images:**")
+        # Download the model in the background when the user enters this mode
+        if not os.path.exists("final_articleType_model.h5"):
+            with st.spinner("Downloading model..."):
+                download_model()  # This will start the download when user switches to this mode
         
-        # Create rows with 2 images each
-                for i in range(0, len(recommendations), 2):
-                    cols = st.columns(2)
-            
-            # First image in the row
-                    with cols[0]:
-                        rec_path1, score1 = recommendations[i]
-                        normalized_rec_path1 = rec_path1.replace("\\", "/")
-                        
-                        #rec_img1 = Image.open(rec_path1)
-                        link = data[data['filename'] == normalized_rec_path1]['link'].iloc[0]
-                        product_id = data[data['filename'] == normalized_rec_path1]['id'].iloc[0]
-                        product_name = data[data['filename'] == normalized_rec_path1]['productDisplayName'].iloc[0]
-                        product_price = data[data['filename'] == normalized_rec_path1]['Price'].iloc[0]
-                        product_sizes = data[data['filename'] == normalized_rec_path1]['SizeOption'].iloc[0]
-
-                        st.image(link, caption=f"Similarity: {score1:.2f}", width=400)
-                        st.write(f"Product ID: {product_id}")
-                        
-                        st.write(f"{product_name}")
-                        st.write(f"Price: ₹{product_price}")
-                        st.write(f"Sizes: {product_sizes}")
-                        
-                        st.write("---")
+        # Load model after downloading
+        try:
+            # Load the model
+            tf_model = tf.keras.models.load_model('final_articleType_model.h5')
     
-                        
-                        
-            
-                    # Second image in the row (if available)
-                    if i + 1 < len(recommendations):
-                        with cols[1]:
-                            rec_path2, score2 = recommendations[i + 1]
-                            normalized_rec_path2 = rec_path2.replace("\\", "/")
-                            #rec_img2 = Image.open(rec_path2)
-                            link = data[data['filename'] == normalized_rec_path2]['link'].iloc[0]
-                            product_id = data[data['filename'] == normalized_rec_path2]['id'].iloc[0]
-                            product_name = data[data['filename'] == normalized_rec_path2]['productDisplayName'].iloc[0]
-                            product_price = data[data['filename'] == normalized_rec_path2]['Price'].iloc[0]
-                            product_sizes = data[data['filename'] == normalized_rec_path2]['SizeOption'].iloc[0]
-
-                            st.image(link, caption=f"Similarity: {score2:.2f}", width=400)
+            if uploaded_file is not None:
+                # Create a container to center and resize the uploaded image
+                col1, col2, col3 = st.columns([1, 3, 1])
+    
+                with col2:
+                    st.image(uploaded_file, caption="Uploaded Image", width=400)
+    
+                try:
+                    image = Image.open(uploaded_file)
+                    processed_image = preprocess_image(image)
+    
+                    # Predict image class
+                    predictions = tf_model.predict(processed_image)
+                    le = LabelEncoder()
+                    le.fit(data['articleType'])
+    
+                    # Make predictions
+                    predicted_class = np.argmax(predictions)
+    
+                    # Get the corresponding class label
+                    predicted_label = le.inverse_transform([predicted_class])[0]
+                    st.write(f"**Predicted Class:** {predicted_label}")
+    
+                    # Extract embeddings for the input image
+                    st.write("Extracting features...")
+                    feature_extractor = tf.keras.Model(inputs=tf_model.input, outputs=tf_model.layers[-3].output)
+                    input_embedding = feature_extractor.predict(processed_image).flatten()
+    
+                    # Recommend similar images
+                    st.write("Fetching recommendations...")
+                    recommendations = recommend_similar_images(input_embedding, models['embeddings'], models['image_paths'])
+    
+                    # Display recommended images in 2 images per row
+                    st.write("**Recommended Images:**")
+    
+                    # Create rows with 2 images each
+                    for i in range(0, len(recommendations), 2):
+                        cols = st.columns(2)
+    
+                        # First image in the row
+                        with cols[0]:
+                            rec_path1, score1 = recommendations[i]
+                            normalized_rec_path1 = rec_path1.replace("\\", "/")
+                            
+                            # Retrieve product details from data
+                            link = data[data['filename'] == normalized_rec_path1]['link'].iloc[0]
+                            product_id = data[data['filename'] == normalized_rec_path1]['id'].iloc[0]
+                            product_name = data[data['filename'] == normalized_rec_path1]['productDisplayName'].iloc[0]
+                            product_price = data[data['filename'] == normalized_rec_path1]['Price'].iloc[0]
+                            product_sizes = data[data['filename'] == normalized_rec_path1]['SizeOption'].iloc[0]
+    
+                            st.image(link, caption=f"Similarity: {score1:.2f}", width=400)
                             st.write(f"Product ID: {product_id}")
-                        
                             st.write(f"{product_name}")
                             st.write(f"Price: ₹{product_price}")
                             st.write(f"Sizes: {product_sizes}")
-                        
                             st.write("---")
     
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
+                        # Second image in the row (if available)
+                        if i + 1 < len(recommendations):
+                            with cols[1]:
+                                rec_path2, score2 = recommendations[i + 1]
+                                normalized_rec_path2 = rec_path2.replace("\\", "/")
+                                
+                                # Retrieve product details from data
+                                link = data[data['filename'] == normalized_rec_path2]['link'].iloc[0]
+                                product_id = data[data['filename'] == normalized_rec_path2]['id'].iloc[0]
+                                product_name = data[data['filename'] == normalized_rec_path2]['productDisplayName'].iloc[0]
+                                product_price = data[data['filename'] == normalized_rec_path2]['Price'].iloc[0]
+                                product_sizes = data[data['filename'] == normalized_rec_path2]['SizeOption'].iloc[0]
+    
+                                st.image(link, caption=f"Similarity: {score2:.2f}", width=400)
+                                st.write(f"Product ID: {product_id}")
+                                st.write(f"{product_name}")
+                                st.write(f"Price: ₹{product_price}")
+                                st.write(f"Sizes: {product_sizes}")
+                                st.write("---")
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
         
-
-
+        except Exception as e:
+            st.error(f"Failed to load the model: {e}")
 if __name__ == "__main__":
     main()
