@@ -272,12 +272,12 @@ def main():
             with col1:
                 st.header(f"Product {user_selected_product_ids[0]}")
                 img1 = data[data['id'] == user_selected_product_ids[0]]['link'].iloc[0]
-                st.image(img1, use_column_width=True)
+                st.image(img1, width=400)
             
             with col2:
                 st.header(f"Product {user_selected_product_ids[1]}")
                 img2 = data[data['id'] == user_selected_product_ids[1]]['link'].iloc[0]
-                st.image(img2, use_column_width=True)
+                st.image(img2, width=400)
             
             # Get combination feedback
             decision, reason = get_combination_feedback(user_selected_product_ids, data, models['gemini'])
