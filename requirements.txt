@@ -1,0 +1,8 @@
+numpy==2.2.0
+pandas==2.2.3
+Pillow==11.0.0
+protobuf==5.29.1
+scikit_learn==1.6.0
+streamlit==1.39.0
+tensorflow==2.18.0
+tensorflow_intel==2.18.0
