@@ -1,12 +1,12 @@
 google-generativeai
 gdown
 requests
-numpy>=1.22.4,<2.0
-pandas==2.2.3
-Pillow>=7.1.0,<11
-protobuf>=3.20,<6
-scikit_learn==1.6.0
-streamlit==1.39.0
-tensorflow==2.13.0
+numpy
+pandas
+Pillow
+protobuf
+scikit_learn
+streamlit
+tensorflow
 
 
