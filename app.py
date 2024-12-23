@@ -11,6 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from tensorflow.keras.models import load_model
 from sklearn.preprocessing import LabelEncoder
 import gdown
+import faiss
 
 # Page Configuration
 st.set_page_config(page_title='Fashion Product Recommender', page_icon="👗", layout="wide")
@@ -52,11 +53,16 @@ def load_models():
         # Load precomputed embeddings
         embeddings = np.load("image_embeddings.npy")
         image_paths = np.load("image_paths.npy")
+        # Use FAISS for approximate nearest neighbors
+        embedding_dim = embeddings.shape[1]
+        index = faiss.IndexFlatL2(embedding_dim)  # L2 distance index
+        index.add(embeddings)
         
         return {
             'gemini': gemini_model,
             'embeddings': embeddings,
-            'image_paths': image_paths
+            'image_paths': image_paths,
+            'faiss_index': index
         }
     
     except Exception as e:
@@ -96,6 +102,8 @@ def preprocess_image(image, target_size=(180, 180)):
     image = np.array(image) / 255.0
     return np.expand_dims(image, axis=0)
 
+
+
 def recommend_similar_images(input_embedding, embeddings, image_paths, top_n=16):
     scores = cosine_similarity([input_embedding], embeddings)[0]
     recommended_indices = np.argsort(scores)[::-1][:top_n]
@@ -110,7 +118,23 @@ def get_combination_feedback(user_selected_product_ids, data, model):
     for i, img in enumerate(selected_images):
         contents.extend([f"Product {i+1}:", img])
     
-    question = "Based on their style, color, material, and overall appearance, can these products be combined and look great? ( Note: two similar category of product cannot be combined for example if one is suppose tshirt and other is also topwear suppose tshirt ). Return in JSON with decision in either yes or no and reason:"
+    question = """
+Based on their:
+
+* **Style:** (e.g., casual, formal, sporty, bohemian)
+* **Color:** (e.g., color palette, complementary, contrasting)
+* **Material:** (e.g., fabrics, textures, compatibility)
+* **Overall Appearance:** (e.g., visual weight, silhouette, design elements)
+
+Can these products be combined effectively to create a visually appealing and cohesive outfit? 
+
+**Note:** Combinations of items within the same primary category (e.g., two shirts, two pairs of pants) are generally not considered effective. Combinations of items from different categories (e.g., shirt and pants, shirt and jacket, skirt and top) are typically more successful.
+
+Return a JSON object with:
+
+* **decision:** "yes" or "no"
+* **reason:** A concise explanation supporting the decision. 
+"""
     contents.append(question)
     
     responses = model.generate_content(contents, stream=True)
@@ -171,7 +195,7 @@ def recommend_complementary_products(user_selected_product_ids, decision, reason
                                     (data['gender'] == selected_gender) &
                                     (data['subCategory'] == selected_subcategory)]
 
-        return similar_products[['productDisplayName', 'baseColour', 'usage', 'subCategory', 'gender']]
+        return similar_products[['id','productDisplayName', 'baseColour', 'usage', 'subCategory', 'gender']].set_index('id')
     else:
         return pd.DataFrame()    
     
@@ -212,7 +236,7 @@ def main():
         size_filter = st.sidebar.multiselect("Size", set(size for sizes in data['SizeOption'].dropna() for size in sizes.split(", ")), default=None)
         
         # User Search Input
-        user_query = st.text_input("Search for a product by name or description:")
+        user_query = st.text_input("Search for a product by name or description:", placeholder="e.g., 'Turtle Check Men Navy Blue Shirt'")
         
         # Apply Filters
         filtered_data = data[
@@ -253,6 +277,17 @@ def main():
     # Outfit Combination Recommender Mode
     elif app_mode == "Outfit Combination Recommender":
         st.title("Outfit Combination Recommender")
+
+        # Instruction for users
+        st.markdown("""
+                    ### Instructions:
+                    - Select **two complementary product IDs** to see how they match.
+                    - Few examples of complementary pairs include:
+                        - **Shirt and Jeans** 
+                        - **Shirt and Jacket** 
+                        - **Top and Skirt** 
+                    - You can find product IDs by navigating to **Product Search** mode.
+                    """)
         
         # Get unique product IDs
         unique_product_ids = sorted(data['id'].unique())
