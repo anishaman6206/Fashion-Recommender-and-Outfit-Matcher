@@ -11,7 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from tensorflow.keras.models import load_model
 from sklearn.preprocessing import LabelEncoder
 import gdown
-import faiss
+#import faiss
 
 # Page Configuration
 st.set_page_config(page_title='Fashion Product Recommender', page_icon="👗", layout="wide")
@@ -55,14 +55,14 @@ def load_models():
         image_paths = np.load("image_paths.npy")
         # Use FAISS for approximate nearest neighbors
         embedding_dim = embeddings.shape[1]
-        index = faiss.IndexFlatL2(embedding_dim)  # L2 distance index
-        index.add(embeddings)
+        #index = faiss.IndexFlatL2(embedding_dim)  # L2 distance index
+        #index.add(embeddings)
         
         return {
             'gemini': gemini_model,
             'embeddings': embeddings,
             'image_paths': image_paths,
-            'faiss_index': index
+            #'faiss_index': index
         }
     
     except Exception as e:
