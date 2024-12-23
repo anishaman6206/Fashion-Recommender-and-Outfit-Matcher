@@ -8,5 +8,6 @@ protobuf
 scikit_learn
 streamlit
 tensorflow
+faiss
 
 
