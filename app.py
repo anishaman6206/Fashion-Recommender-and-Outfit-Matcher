@@ -51,16 +51,16 @@ def load_models():
       
         
         # Load precomputed embeddings
-        embeddings = np.load("image_embeddings.npy")
-        image_paths = np.load("image_paths.npy")
+        #embeddings = np.load("image_embeddings1.npy")
+        image_paths = np.load("image_paths1.npy")
         # Use FAISS for approximate nearest neighbors
-        embedding_dim = embeddings.shape[1]
+        #embedding_dim = embeddings.shape[1]
         #index = faiss.IndexFlatL2(embedding_dim)  # L2 distance index
         #index.add(embeddings)
         
         return {
             'gemini': gemini_model,
-            'embeddings': embeddings,
+            #'embeddings': embeddings,
             'image_paths': image_paths,
             #'faiss_index': index
         }
@@ -70,19 +70,29 @@ def load_models():
         return None
 
 
+
+# Function to download files from Google Drive
+def download_file(file_id, output_file, description):
+    if not os.path.exists(output_file):
+        try:
+            download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+            gdown.download(download_url, output_file, quiet=False)
+            st.success(f"Downloaded {description} successfully!")
+        except Exception as e:
+            st.error(f"Failed to download {description}: {e}")
+            raise e
+
 # Function to download the model file
 def download_model():
-    zip_file = "final_articleType_model.h5"
-    if not os.path.exists(zip_file):
-        try:
-            
-            file_id = "1KblZ3xPpUhLic12rsQfWJ5tDZ0ViPij8"  
-            download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-            gdown.download(download_url, zip_file, quiet=False)
-            st.success(f"Downloaded {zip_file} successfully!")
-        except Exception as e:
-            st.error(f"Failed to download the model: {e}")
-            raise e
+    model_file = "final_articleType_model1.h5"
+    model_file_id = "1z0IMZDLRNzZ-2sIRfcMewB4WNy2Vvp8z"
+    download_file(model_file_id, model_file, "model")
+
+# Function to download the embeddings file
+def download_embeddings():
+    embeddings_file = "image_embeddings1.npy"
+    embeddings_file_id = "1YG20Q3jwn7L5MepReGK-GyQKHdoI8wEE"  # Replace with the file ID of your embeddings file
+    download_file(embeddings_file_id, embeddings_file, "image embeddings")
             
             
 
@@ -341,25 +351,29 @@ def main():
             else:
                 st.warning("The products cannot be combined effectively.")
    
-
-                    
     
     # Image-Based Recommendation Mode
-    
     elif app_mode == "Image-Based Recommendation":
         st.title("Image Classification & Recommendation")
     
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     
-        # Download the model in the background when the user enters this mode
-        if not os.path.exists("final_articleType_model.h5"):
+        # Download necessary files
+        if not os.path.exists("final_articleType_model1.h5"):
             with st.spinner("Downloading model..."):
-                download_model()  # This will start the download when user switches to this mode
+                download_model()
         
+        if not os.path.exists("image_embeddings1.npy"):
+            with st.spinner("Downloading image embeddings..."):
+                download_embeddings()
+    
         # Load model after downloading
         try:
             # Load the model
-            tf_model = tf.keras.models.load_model('final_articleType_model.h5')
+            tf_model = tf.keras.models.load_model('final_articleType_model1.h5')
+    
+            # Load the embeddings
+            embeddings = np.load("image_embeddings1.npy", allow_pickle=True).item()
     
             if uploaded_file is not None:
                 # Create a container to center and resize the uploaded image
@@ -386,12 +400,12 @@ def main():
     
                     # Extract embeddings for the input image
                     st.write("Extracting features...")
-                    feature_extractor = tf.keras.Model(inputs=tf_model.input, outputs=tf_model.layers[-3].output)
+                    feature_extractor = tf.keras.Model(inputs=tf_model.input, outputs=tf_model.layers[-4].output)
                     input_embedding = feature_extractor.predict(processed_image).flatten()
     
                     # Recommend similar images
                     st.write("Fetching recommendations...")
-                    recommendations = recommend_similar_images(input_embedding, models['embeddings'], models['image_paths'])
+                    recommendations = recommend_similar_images(input_embedding, embeddings['embeddings'], embeddings['image_paths'])
     
                     # Display recommended images in 2 images per row
                     st.write("**Recommended Images:**")
@@ -440,7 +454,6 @@ def main():
                                 st.write("---")
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
-        
         except Exception as e:
             st.error(f"Failed to load the model: {e}")
 if __name__ == "__main__":
