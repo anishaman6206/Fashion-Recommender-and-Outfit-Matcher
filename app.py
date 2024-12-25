@@ -373,7 +373,7 @@ def main():
             tf_model = tf.keras.models.load_model('final_articleType_model1.h5')
     
             # Load the embeddings
-            embeddings = np.load("image_embeddings1.npy", allow_pickle=True).item()
+            embeddings = np.load("image_embeddings1.npy", allow_pickle=True)
     
             if uploaded_file is not None:
                 # Create a container to center and resize the uploaded image
@@ -405,7 +405,7 @@ def main():
     
                     # Recommend similar images
                     st.write("Fetching recommendations...")
-                    recommendations = recommend_similar_images(input_embedding, embeddings['embeddings'], embeddings['image_paths'])
+                    recommendations = recommend_similar_images(input_embedding, embeddings, models['image_paths'])
     
                     # Display recommended images in 2 images per row
                     st.write("**Recommended Images:**")
