@@ -1,3 +1,4 @@
 # Ignore model and embeddings files
 image_embeddings1.npy
 final_articleType_model1.h5
+final_articleType_model.h5
