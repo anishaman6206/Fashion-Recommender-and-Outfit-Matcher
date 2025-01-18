@@ -356,10 +356,11 @@ def main():
     elif app_mode == "Image-Based Recommendation":
         st.title("Image Classification & Recommendation")
         # Instruction for users
+       
         st.markdown("""
-                    ### Disclaimer:
-                    - This feature currently works optimal on test data only, due to model trained on lesser data and without image segmentation.
-                    """)
+        ### Disclaimer:
+        - This feature currently works optimally on test data only, due to the model being trained on lesser data and without image segmentation.
+        """)
     
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     
