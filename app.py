@@ -354,11 +354,13 @@ def main():
     
     # Image-Based Recommendation Mode
     elif app_mode == "Image-Based Recommendation":
-        st.info("This feature currently works optimally on test data only, due to the model being trained on lesser data and without image segmentation.")
         st.title("Image Classification & Recommendation")
         # Instruction for users
        
-        #st.info("This feature currently works optimally on test data only, due to the model being trained on lesser data and without image segmentation.")
+        st.markdown("""
+        ### Disclaimer:
+        - This feature currently works optimally on test data only, due to the model being trained on lesser data and without image segmentation.
+        """)
     
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     
@@ -413,8 +415,6 @@ def main():
     
                     # Display recommended images in 2 images per row
                     st.write("**Recommended Images:**")
-
-                    st.info("This feature currently works optimally on test data only, due to the model being trained on lesser data and without image segmentation.")
     
                     # Create rows with 2 images each
                     for i in range(0, len(recommendations), 2):
