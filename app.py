@@ -358,7 +358,7 @@ def main():
         # Instruction for users
         st.markdown("""
                     ### Disclaimer:
-                    This feature currently works optimal on test data only, due to model trained on lesser data and without image segmentation
+                    - This feature currently works optimal on test data only, due to model trained on lesser data and without image segmentation.
                     """)
     
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
