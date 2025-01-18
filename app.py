@@ -357,10 +357,7 @@ def main():
         st.title("Image Classification & Recommendation")
         # Instruction for users
        
-        st.markdown("""
-        ### Disclaimer:
-        - This feature currently works optimally on test data only, due to the model being trained on lesser data and without image segmentation.
-        """)
+        st.info("This feature currently works optimally on test data only, due to the model being trained on lesser data and without image segmentation.")
     
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     
