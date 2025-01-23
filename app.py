@@ -226,18 +226,47 @@ def main():
     tfidf_matrix = vectorizer.fit_transform(data['combined_features'])
     
     # Sidebar Navigation
-    app_mode = st.sidebar.selectbox("Choose App Mode", 
-        [
-            "Product Search & Filter", 
-            "Outfit Combination Recommender",
-            "Image-Based Recommendation"
+    app_mode = st.sidebar.radio(
+    "Choose App Mode",
+    ["Product Search & Filter", "Outfit Combination Recommender", "Image-Based Recommendation"]
+)
+
+    #app_mode = st.sidebar.selectbox("Choose App Mode", 
+        #[
+           # "Product Search & Filter", 
+           # "Outfit Combination Recommender",
+           # "Image-Based Recommendation"
             
-        ]
-    )
-    
+       # ]
+   # )
+    st.markdown(
+    f"""
+    <style>
+        .gradient-text {{
+            background: linear-gradient(90deg, #00FFFF, #008B8B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 28px;
+            font-weight: bold;
+        }}
+    </style>
+    <h2 class="gradient-text">💎 {app_mode} Mode</h2>
+    """,
+    unsafe_allow_html=True
+)
+
+
+
+   
+
+
     # Product Search & Filter Mode
     if app_mode == "Product Search & Filter":
         st.title("Product Search & Filter")
+
+        st.sidebar.markdown(
+    "🔎 **Product Search & Filter:** Find products based on name, price, and size.  \n")
+    
         
         # Sidebar Filters
         st.sidebar.header("Filters")
@@ -287,6 +316,11 @@ def main():
     # Outfit Combination Recommender Mode
     elif app_mode == "Outfit Combination Recommender":
         st.title("Outfit Combination Recommender")
+        st.sidebar.markdown(
+    
+    "👕 **Outfit Combination Recommender:** Get AI suggestions for matching outfits.  \n"
+    
+)
 
         # Instruction for users
         st.markdown("""
@@ -356,7 +390,10 @@ def main():
     elif app_mode == "Image-Based Recommendation":
         st.title("Image Classification & Recommendation")
         # Instruction for users
-       
+        st.sidebar.markdown(
+    
+    "🖼️ **Image-Based Recommendation:** Upload an image to find similar products."
+)
         st.markdown("""
         ### Disclaimer:
         - This feature currently works optimally on test data only, due to the model being trained on lesser data and without image segmentation.
