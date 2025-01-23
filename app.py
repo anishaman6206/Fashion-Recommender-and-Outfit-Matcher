@@ -262,7 +262,7 @@ def main():
 
     # Product Search & Filter Mode
     if app_mode == "Product Search & Filter":
-        st.title("Product Search & Filter")
+        #st.title("Product Search & Filter")
 
         st.sidebar.markdown(
     "🔎 **Product Search & Filter:** Find products based on name, price, and size.  \n")
@@ -315,7 +315,7 @@ def main():
 
     # Outfit Combination Recommender Mode
     elif app_mode == "Outfit Combination Recommender":
-        st.title("Outfit Combination Recommender")
+        #st.title("Outfit Combination Recommender")
         st.sidebar.markdown(
     
     "👕 **Outfit Combination Recommender:** Get AI suggestions for matching outfits.  \n"
@@ -388,7 +388,7 @@ def main():
     
     # Image-Based Recommendation Mode
     elif app_mode == "Image-Based Recommendation":
-        st.title("Image Classification & Recommendation")
+        #st.title("Image Classification & Recommendation")
         # Instruction for users
         st.warning(
     "⚠️ **Disclaimer:** This feature currently works optimally on test data only, "
