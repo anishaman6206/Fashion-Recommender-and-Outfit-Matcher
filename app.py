@@ -226,8 +226,9 @@ def main():
     tfidf_matrix = vectorizer.fit_transform(data['combined_features'])
     
     # Sidebar Navigation
+    st.sidebar.header("Choose App Mode")
     app_mode = st.sidebar.radio(
-    "Choose App Mode",
+    "",
     ["Product Search & Filter", "Outfit Combination Recommender", "Image-Based Recommendation"]
 )
 
