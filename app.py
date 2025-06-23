@@ -85,13 +85,13 @@ def download_file(file_id, output_file, description):
 # Function to download the model file
 def download_model():
     model_file = "final_articleType_model1.h5"
-    model_file_id = "1z0IMZDLRNzZ-2sIRfcMewB4WNy2Vvp8z"
+    model_file_id = "103i29fJPUwdF1KlM9QETFdjmJ7DlEezK" 
     download_file(model_file_id, model_file, "model")
 
 # Function to download the embeddings file
 def download_embeddings():
     embeddings_file = "image_embeddings1.npy"
-    embeddings_file_id = "1YG20Q3jwn7L5MepReGK-GyQKHdoI8wEE"  # Replace with the file ID of your embeddings file
+    embeddings_file_id = "1Z36tMI3mESl9ysJ9b_h79Y0osItrj-Bu"  # Replace with the file ID of your embeddings file
     download_file(embeddings_file_id, embeddings_file, "image embeddings")
             
             
