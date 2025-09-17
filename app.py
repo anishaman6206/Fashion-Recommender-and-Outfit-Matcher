@@ -44,8 +44,10 @@ def load_data():
 @st.cache_resource
 def load_models():
     try:
+        # In load_models() function
+        api_key = st.secrets["GEMINI_API_KEY"]
         # Configure Gemini AI
-        genai.configure(api_key="AIzaSyCF5NyCk8LvDATLUtEsTmcS_NgHBi4Az3Q")
+        genai.configure(api_key=api_key)
         gemini_model = genai.GenerativeModel("gemini-1.5-flash")
       
       
@@ -146,21 +148,20 @@ Return a JSON object with:
 * **reason:** A concise explanation supporting the decision. 
 """
     contents.append(question)
-    
-    responses = model.generate_content(contents, stream=True)
-    all_responses = [response.text for response in responses]
-    
     try:
+        responses = model.generate_content(contents, stream=True)
+        all_responses = [response.text for response in responses]
         concatenated_response = ''.join(all_responses)
         cleaned_response = concatenated_response.replace('```json', '').replace('```', '').strip()
         response_json = json.loads(cleaned_response)
         
         decision = response_json.get("decision", "Unknown")
         reason = response_json.get("reason", "No reason provided")
-        return decision, reason
+        return decision, reason        
     except Exception as e:
-        st.error(f"Error parsing response: {e}")
-        return "Unknown", "Response parsing error"
+        st.error(f"An error occurred while calling the API: {e}")
+        return "Error", "Could not get feedback from the AI model."
+
     
 def load_image_from_dataset(product_id, dataframe):
     # Function to load an image from the dataset based on product ID
