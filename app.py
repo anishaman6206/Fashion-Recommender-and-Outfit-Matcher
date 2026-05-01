@@ -48,7 +48,7 @@ def load_models():
         api_key = st.secrets["GEMINI_API_KEY"]
         # Configure Gemini AI
         genai.configure(api_key=api_key)
-        gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+        gemini_model = genai.GenerativeModel("gemini-2.5-flash")
       
       
         
